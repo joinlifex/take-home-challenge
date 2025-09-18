@@ -16,18 +16,18 @@ Please follow these steps carefully to set up your challenge environment.
 
 1.  **Create Your Repository:**
     *   On this repository page, click the green "**Use this template**" button and select "**Create a new repository**".
-<img width="480" height="132" alt="Screenshot 2025-09-18 at 14 51 25" src="https://github.com/user-attachments/assets/d48dbda5-73b1-4f55-aa21-c5198d1436dd" />
+<img width="480" height="132" alt="Screenshot 2025-09-18 at 14 51 25" src="https://github.com/user-attachments/assets/2567f5e9-837e-436a-938c-204f93cfd9ef" />
 
 
 2.  **Include All Branches (Crucial Step):**
     *   When creating your repository, you will see a checkbox for "**Include all branches**".
     *   **It is essential that you check this box.** This will ensure you have the `feature/lateRentPayment` branch needed for the challenge.
-<img width="775" height="260" alt="Screenshot 2025-09-18 at 14 52 34" src="https://github.com/user-attachments/assets/38506ae0-4d2b-42d3-9897-8e72feeb75d7" />
+<img width="775" height="260" alt="Screenshot 2025-09-18 at 14 52 34" src="https://github.com/user-attachments/assets/1cb88b88-d1ac-4003-94fc-af9181c79c8a" />
 
 
 3.  **Create the Pull Request:**
     *   Once your repository has been created, create a pull request for the `feature/lateRentPayment` branch
-<img width="972" height="145" alt="Screenshot 2025-09-18 at 14 53 22" src="https://github.com/user-attachments/assets/e3266a05-8924-4207-a117-6ebec885c453" />
+<img width="972" height="145" alt="Screenshot 2025-09-18 at 14 53 22" src="https://github.com/user-attachments/assets/982f3b9b-41a4-4ffa-a87d-168d21d4ea6d" />
 
 4.  **Share Your Work:**
     *   Once your review is complete, you need to share the repository with us. You have two options:
