@@ -1,3 +1,4 @@
+import {startOfMonth} from 'date-fns';
 import {DeepPartial, BaseEntity} from 'typeorm';
 import Apartment from './apartment/apartment.entity';
 import Lease from './lease/lease.entity';
@@ -37,7 +38,7 @@ export const createTenant = async (props?: NullablePartial<Tenant>): Promise<Ten
 };
 
 export const createLease = async (props?: NullablePartial<Lease>): Promise<Lease> => {
-  const defaultProps: NullablePartial<Lease> = {rent: 2000, deposit: 1000, start: new Date(), ...props};
+  const defaultProps: NullablePartial<Lease> = {rent: 2000, deposit: 1000, start: startOfMonth(new Date()), ...props};
 
   if (typeof defaultProps.tenantId === 'undefined') {
     const tenant = await createTenant();

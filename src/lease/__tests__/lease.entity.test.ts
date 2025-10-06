@@ -1,4 +1,4 @@
-import {addDays, endOfDay, startOfDay, subDays} from 'date-fns';
+import {addDays, addMonths, endOfDay, endOfMonth, endOfYear, startOfDay, startOfMonth, subDays, subMonths} from 'date-fns';
 import Apartment from '../../apartment/apartment.entity';
 import {createApartment, createLease, createTenant} from '../../factories';
 import Tenant from '../../tenant/tenant.entity';
@@ -55,20 +55,31 @@ describe('Lease', () => {
     }
   });
 
+  it('start must be at the beginning of a month', async () => {
+    const start = startOfMonth(new Date());
+    await expect(createLease({start: addDays(start, 1)})).rejects.toThrow(LEASE_ERRORS.START_NOT_BEGINNING_OF_MONTH);
+  });
+
+  it('end must be at the end of a month', async () => {
+    const start = startOfMonth(new Date());
+    await expect(createLease({start, end: addDays(endOfMonth(start), -1)})).rejects.toThrow(LEASE_ERRORS.END_NOT_END_OF_MONTH);
+  });
+
   it('start to be enforced to start of day', async () => {
-    const now = new Date();
-    const lease = await createLease({start: endOfDay(now)});
-    expect(lease.start).toStrictEqual(startOfDay(now));
+    const start = startOfMonth(new Date());
+    const lease = await createLease({start: endOfDay(start)});
+    expect(lease.start).toStrictEqual(start);
   });
 
   it('end to be enforced to end of day', async () => {
-    const now = new Date();
-    const lease = await createLease({start: subDays(now, 10), end: startOfDay(now)});
-    expect(lease.end).toStrictEqual(endOfDay(now));
+    const start = startOfMonth(new Date());
+    const lease = await createLease({start, end: startOfDay(endOfMonth(start))});
+    expect(lease.end).toStrictEqual(endOfDay(endOfMonth(start)));
   });
 
   it('end must be after start', async () => {
-    await expect(createLease({start: new Date(), end: subDays(new Date(), 1)})).rejects.toThrow(LEASE_ERRORS.END_BEFORE_START);
+    const start = startOfMonth(new Date());
+    await expect(createLease({start, end: subDays(start, 1)})).rejects.toThrow(LEASE_ERRORS.END_BEFORE_START);
   });
 
   it('should return id and timestamps on create', async () => {
@@ -82,159 +93,167 @@ describe('Lease', () => {
     it('should reject when new lease starts inside an existing lease', async () => {
       const tenant = await createTenant();
       const start = new Date('2020-01-01');
-      const end = addDays(start, 9); // 2020-01-10
+      const end = endOfMonth(addMonths(start, 2));
       await createLease({tenantId: tenant.id, start, end});
 
-      await expect(createLease({tenantId: tenant.id, start: addDays(start, 4), end: addDays(start, 14)})) // 2020-01-05 -> 2020-01-15
-        .rejects.toThrow(LEASE_ERRORS.USER_OVERLAP);
+      await expect(createLease({tenantId: tenant.id, start: addMonths(start, 1), end: endOfYear(start)})).rejects.toThrow(
+        LEASE_ERRORS.USER_OVERLAP
+      );
     });
 
     it('should reject when new lease ends inside an existing lease', async () => {
       const tenant = await createTenant();
-      const start = new Date('2020-01-05');
-      const end = addDays(start, 10); // 2020-01-15
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(addMonths(start, 2));
       await createLease({tenantId: tenant.id, start, end});
 
-      await expect(createLease({tenantId: tenant.id, start: subDays(start, 4), end: addDays(start, 5)})) // 2020-01-01 -> 2020-01-10
-        .rejects.toThrow(LEASE_ERRORS.USER_OVERLAP);
+      await expect(createLease({tenantId: tenant.id, start: subMonths(start, 4), end: endOfMonth(addMonths(start, 1))})).rejects.toThrow(
+        LEASE_ERRORS.USER_OVERLAP
+      );
     });
 
     it('should reject when new lease fully covers an existing lease', async () => {
       const tenant = await createTenant();
-      const start = new Date('2020-01-05');
-      const end = addDays(start, 5); // 2020-01-10
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(addMonths(start, 2));
       await createLease({tenantId: tenant.id, start, end});
 
-      await expect(createLease({tenantId: tenant.id, start: subDays(start, 4), end: addDays(end, 5)})) // 2020-01-01 -> 2020-01-15
-        .rejects.toThrow(LEASE_ERRORS.USER_OVERLAP);
+      await expect(createLease({tenantId: tenant.id, start: subMonths(start, 4), end: addMonths(end, 5)})).rejects.toThrow(
+        LEASE_ERRORS.USER_OVERLAP
+      );
     });
 
     it('should reject when new lease is fully covered by an existing lease', async () => {
       const tenant = await createTenant();
-      const start = new Date('2020-01-01');
-      const end = addDays(start, 14); // 2020-01-15
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(addMonths(start, 5));
       await createLease({tenantId: tenant.id, start, end});
 
-      await expect(createLease({tenantId: tenant.id, start: addDays(start, 4), end: subDays(end, 5)})) // 2020-01-05 -> 2020-01-10
-        .rejects.toThrow(LEASE_ERRORS.USER_OVERLAP);
+      await expect(createLease({tenantId: tenant.id, start: addMonths(start, 1), end: endOfMonth(addMonths(start, 1))})).rejects.toThrow(
+        LEASE_ERRORS.USER_OVERLAP
+      );
     });
 
     it('should reject when both leases are open-ended', async () => {
       const tenant = await createTenant();
-      const start = new Date('2020-01-01');
+      const start = startOfMonth(new Date());
       await createLease({tenantId: tenant.id, start, end: null});
 
-      await expect(createLease({tenantId: tenant.id, start: addDays(start, 365), end: null})) // 2021-01-01 -> ∞
-        .rejects.toThrow(LEASE_ERRORS.USER_OVERLAP);
+      await expect(createLease({tenantId: tenant.id, start: addMonths(start, 1), end: null})).rejects.toThrow(LEASE_ERRORS.USER_OVERLAP);
     });
 
     it('should reject when new open-ended lease starts before an existing closed lease ends', async () => {
       const tenant = await createTenant();
-      const start = new Date('2020-01-01');
-      const end = addDays(start, 364); // 2020-12-31
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(start);
       await createLease({tenantId: tenant.id, start, end});
 
-      await expect(createLease({tenantId: tenant.id, start: addDays(start, 150), end: null})) // 2020-05-30 -> ∞
-        .rejects.toThrow(LEASE_ERRORS.USER_OVERLAP);
+      await expect(createLease({tenantId: tenant.id, start: subMonths(start, 4), end: null})).rejects.toThrow(LEASE_ERRORS.USER_OVERLAP);
     });
 
     it('should reject when existing open-ended lease overlaps with a new closed lease', async () => {
       const tenant = await createTenant();
-      const start = new Date('2020-01-01');
+      const start = startOfMonth(new Date());
       await createLease({tenantId: tenant.id, start, end: null});
 
-      await expect(createLease({tenantId: tenant.id, start: addDays(start, 365), end: addDays(start, 730)})) // 2021-01-01 -> 2021-12-31
-        .rejects.toThrow(LEASE_ERRORS.USER_OVERLAP);
+      await expect(createLease({tenantId: tenant.id, start: addMonths(start, 10), end: endOfMonth(addMonths(start, 10))})).rejects.toThrow(
+        LEASE_ERRORS.USER_OVERLAP
+      );
     });
 
     it('should allow when new lease starts exactly at end of existing lease (no overlap)', async () => {
       const tenant = await createTenant();
-      const start = new Date('2020-01-01');
-      const end = addDays(start, 364); // 2020-12-31
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(start);
       await createLease({tenantId: tenant.id, start, end});
 
-      await expect(createLease({tenantId: tenant.id, start: addDays(end, 1), end: addDays(end, 365)})) // 2020-12-31 -> 2021-12-31
-        .resolves.not.toThrow();
+      await expect(createLease({tenantId: tenant.id, start: addDays(end, 1), end: null})).resolves.not.toThrow();
     });
   });
 
   describe('validateApartmentNoOverlappingLeases', () => {
     it('should reject when new lease starts inside an existing lease', async () => {
       const apartment = await createApartment();
-      const start = new Date('2020-01-01');
-      const end = addDays(start, 9); // 2020-01-10
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(addMonths(start, 2));
       await createLease({apartmentId: apartment.id, start, end});
 
-      await expect(createLease({apartmentId: apartment.id, start: addDays(start, 4), end: addDays(start, 14)})) // 2020-01-05 -> 2020-01-15
-        .rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
+      await expect(
+        createLease({apartmentId: apartment.id, start: addMonths(start, 1), end: endOfMonth(addMonths(end, 3))})
+      ).rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
     });
 
     it('should reject when new lease ends inside an existing lease', async () => {
       const apartment = await createApartment();
-      const start = new Date('2020-01-05');
-      const end = addDays(start, 10); // 2020-01-15
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(addMonths(start, 2));
       await createLease({apartmentId: apartment.id, start, end});
 
-      await expect(createLease({apartmentId: apartment.id, start: subDays(start, 4), end: addDays(start, 5)})) // 2020-01-01 -> 2020-01-10
-        .rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
+      await expect(
+        createLease({apartmentId: apartment.id, start: subMonths(start, 4), end: endOfMonth(subMonths(end, 1))})
+      ).rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
     });
 
     it('should reject when new lease fully covers an existing lease', async () => {
       const apartment = await createApartment();
-      const start = new Date('2020-01-05');
-      const end = addDays(start, 5); // 2020-01-10
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(start);
       await createLease({apartmentId: apartment.id, start, end});
 
-      await expect(createLease({apartmentId: apartment.id, start: subDays(start, 4), end: addDays(end, 5)})) // 2020-01-01 -> 2020-01-15
-        .rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
+      await expect(
+        createLease({apartmentId: apartment.id, start: subMonths(start, 4), end: endOfMonth(addMonths(end, 3))})
+      ).rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
     });
 
     it('should reject when new lease is fully covered by an existing lease', async () => {
       const apartment = await createApartment();
-      const start = new Date('2020-01-01');
-      const end = addDays(start, 14); // 2020-01-15
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(addMonths(start, 5));
       await createLease({apartmentId: apartment.id, start, end});
 
-      await expect(createLease({apartmentId: apartment.id, start: addDays(start, 4), end: subDays(end, 5)})) // 2020-01-05 -> 2020-01-10
-        .rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
+      await expect(
+        createLease({apartmentId: apartment.id, start: addMonths(start, 1), end: endOfMonth(subMonths(end, 1))})
+      ).rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
     });
 
     it('should reject when both leases are open-ended', async () => {
       const apartment = await createApartment();
-      const start = new Date('2020-01-01');
+      const start = startOfMonth(new Date());
       await createLease({apartmentId: apartment.id, start, end: null});
 
-      await expect(createLease({apartmentId: apartment.id, start: addDays(start, 365), end: null})) // 2021-01-01 -> ∞
-        .rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
+      await expect(createLease({apartmentId: apartment.id, start: addMonths(start, 10), end: null})).rejects.toThrow(
+        LEASE_ERRORS.APARTMENT_OVERLAP
+      );
     });
 
     it('should reject when new open-ended lease starts before an existing closed lease ends', async () => {
       const apartment = await createApartment();
-      const start = new Date('2020-01-01');
-      const end = addDays(start, 364); // 2020-12-31
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(addMonths(start, 2));
       await createLease({apartmentId: apartment.id, start, end});
 
-      await expect(createLease({apartmentId: apartment.id, start: addDays(start, 150), end: null})) // 2020-05-30 -> ∞
-        .rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
+      await expect(createLease({apartmentId: apartment.id, start: subMonths(start, 1), end: null})).rejects.toThrow(
+        LEASE_ERRORS.APARTMENT_OVERLAP
+      );
     });
 
     it('should reject when existing open-ended lease overlaps with a new closed lease', async () => {
       const apartment = await createApartment();
-      const start = new Date('2020-01-01');
+      const start = startOfMonth(new Date());
       await createLease({apartmentId: apartment.id, start, end: null});
 
-      await expect(createLease({apartmentId: apartment.id, start: addDays(start, 365), end: addDays(start, 730)})) // 2021-01-01 -> 2021-12-31
-        .rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
+      await expect(
+        createLease({apartmentId: apartment.id, start: addMonths(start, 2), end: endOfMonth(addMonths(start, 2))})
+      ).rejects.toThrow(LEASE_ERRORS.APARTMENT_OVERLAP);
     });
 
     it('should allow when new lease starts exactly at end of existing lease (no overlap)', async () => {
       const apartment = await createApartment();
-      const start = new Date('2020-01-01');
-      const end = addDays(start, 364); // 2020-12-31
+      const start = startOfMonth(new Date());
+      const end = endOfMonth(start);
       await createLease({apartmentId: apartment.id, start, end});
 
-      await expect(createLease({apartmentId: apartment.id, start: addDays(end, 1), end: addDays(end, 365)})) // 2020-12-31 -> 2021-12-31
-        .resolves.not.toThrow();
+      await expect(createLease({apartmentId: apartment.id, start: addDays(end, 1), end: null})).resolves.not.toThrow();
     });
   });
 

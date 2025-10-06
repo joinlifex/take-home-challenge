@@ -1,4 +1,4 @@
-import {startOfDay} from 'date-fns';
+import {startOfDay, startOfMonth} from 'date-fns';
 import {createApartment, createLease, createTenant} from '../../factories';
 import {CreateLeaseInput} from '../lease.dto';
 import Lease from '../lease.entity';
@@ -26,7 +26,7 @@ describe('LeaseResolver', () => {
     const lease: CreateLeaseInput = {
       tenantId: tenant.id,
       apartmentId: apartment.id,
-      start: new Date(),
+      start: startOfMonth(new Date()),
       end: null,
       rent: 3000,
       deposit: 6000,
