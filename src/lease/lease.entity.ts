@@ -118,6 +118,7 @@ class Lease extends BaseEntity {
       },
       {
         tenantId: this.tenantId,
+        start: LessThanOrEqual(this.start),
         end: IsNull(),
       },
     ];
@@ -160,6 +161,7 @@ class Lease extends BaseEntity {
       },
       {
         apartmentId: this.apartmentId,
+        start: LessThanOrEqual(this.start),
         end: IsNull(),
       },
     ];

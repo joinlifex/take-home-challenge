@@ -169,6 +169,16 @@ describe('Lease', () => {
 
       await expect(createLease({tenantId: tenant.id, start: addDays(end, 1), end: null})).resolves.not.toThrow();
     });
+
+    it('should be possible to create an ended lease before an existing open-ended lease', async () => {
+      const tenant = await createTenant();
+      const start = startOfMonth(new Date());
+      await createLease({tenantId: tenant.id, start, end: null});
+
+      await expect(
+        createLease({tenantId: tenant.id, start: subMonths(start, 4), end: endOfMonth(subMonths(start, 1))})
+      ).resolves.not.toThrow();
+    });
   });
 
   describe('validateApartmentNoOverlappingLeases', () => {
@@ -254,6 +264,16 @@ describe('Lease', () => {
       await createLease({apartmentId: apartment.id, start, end});
 
       await expect(createLease({apartmentId: apartment.id, start: addDays(end, 1), end: null})).resolves.not.toThrow();
+    });
+
+      it('should be possible to create an ended lease before an existing open-ended lease', async () => {
+      const apartment = await createApartment();
+      const start = startOfMonth(new Date());
+      await createLease({apartmentId: apartment.id, start, end: null});
+
+      await expect(
+        createLease({apartmentId: apartment.id, start: subMonths(start, 4), end: endOfMonth(subMonths(start, 1))})
+      ).resolves.not.toThrow();
     });
   });
 
