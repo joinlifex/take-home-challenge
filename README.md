@@ -5,7 +5,7 @@ Welcome to the Felix technical challenge! This exercise is designed to simulate 
 
 We believe that great engineers don't just write code, they improve the code and the product thinking of the entire team. This challenge is designed to see how you approach that responsibility.
 
-**Time Limit:** Please timebox this exercise to **2 hours**. We respect your time and are more interested in your thought process than a "perfect" or complete submission.
+**Time Limit:** Please try timebox this exercise to **2 hours**. We respect your time and are more interested in your thought process than a "perfect" or complete submission.
 
 
 ---
@@ -27,6 +27,14 @@ Please follow these steps carefully to set up your challenge environment.
 
 3.  **Create the Pull Request:**
     *   Once your repository has been created, create a pull request for the `feature/lateRentPayment` branch
+    *   If there is a message saying **There isn’t anything to compare.**, clone the repo and run:
+
+```
+git checkout feature/lateRentPayment
+git reset --soft origin/main
+git commit -m "Initialize feature/lateRentPayment"
+git push -f origin feature/lateRentPayment
+```
 <img width="972" height="145" alt="Screenshot 2025-09-18 at 14 53 22" src="https://github.com/user-attachments/assets/982f3b9b-41a4-4ffa-a87d-168d21d4ea6d" />
 
 4.  **Share Your Work:**
@@ -67,10 +75,10 @@ Your review should cover all aspects you find relevant, including:
 
 1.  **Provide your feedback directly on the Pull Request.** Use comments, questions, and code suggestions as you would with a real colleague. Your tone and communication style are as important as your technical feedback.
 
-2.  **(Optional) Propose an alternative.** If you believe there is a significantly better approach (either to the code or to the core problem), you are welcome to open your own PR with a proof-of-concept for your solution. This is not required but is a great way to demonstrate your ideas in action.
+2.  **Propose an alternative.** Do you believe the outilined problem - Property manager need to mark tenant as "Rent is Late" - is the root problem ? If no, please, state the root problem and open your own PR with a proof-of-concept for your solution.
 
 3.  **Submit your notes.** Once you are finished, please add a new file to the repo named `submission.md` with the following information:
-    *   A brief summary of how you spent your 2 hours (e.g., "45 mins understanding the context and PtS, 60 mins reviewing the code and leaving comments, 15 mins writing my notes").
+    *   A brief summary of how you spent your time (e.g., "45 mins understanding the context and PtS, 60 mins reviewing the code and leaving comments, 15 mins writing my notes").
     *   A list of any assumptions you made.
     *   A few notes on what you would do next if you had more time.
 
@@ -88,7 +96,7 @@ Your review should cover all aspects you find relevant, including:
 ### **Your Feedback on This Challenge**
 We are constantly trying to improve our own processes, including this hiring challenge. As a final, optional step, we would be grateful for your honest feedback on this exercise itself. Please feel free to add a section in your `submission.md` file with your thoughts.
 
-For example: Was the 2-hour time limit fair? Were the instructions clear? Did this feel like a relevant test for a senior engineering role? All feedback is welcome.
+For example: Was the time limit fair? Were the instructions clear? Did this feel like a relevant test for a senior engineering role? All feedback is welcome.
 
 ---
 
